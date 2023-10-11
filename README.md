@@ -93,9 +93,11 @@ To enable a particular addon, simply run:
 ```bash
 minikube addons enable <addon>
 ```
-We will need the ingress addon to be enable:
+We will need the ingress, ingress-dns, and metallb addons to be enabled:
 ```bash
 minikube addons enable ingress
+minikube addons enable ingress-dns
+minikube addons enable metallb
 ```
 Minikube doesn't have the Traefik ingress controller installed, so let us use Helm to install it. But we first need to install Helm:
 ```bash
@@ -112,7 +114,7 @@ and we should get an empty table as our output, i.e.,
 | NAME          | NAMESPACE | REVISION  | UPDATED | STATUS  | CHART | APP VERSION |
 | ------------- | --------- | --------- | ------- | ------- | ----- | ----------- |
 ```
-With Helm installed, we can add the `traefik` helm repository and update it with:
+With Helm installed, we can add the `traefik` Helm repository and update it with:
 ```bash
 helm repo add traefik https://helm.traefik.io/traefik
 helm repo update
@@ -155,6 +157,11 @@ A large output should be yielded, which contains a lot of information about the 
       --entrypoints.traefik.address=:9000/tcp
       --entrypoints.web.address=:8000/tcp
       --entrypoints.websecure.address=:8443/tcp
+```
+When the Gen3 service eventually get installed, we will need to expose port 80 (insecure web address, e.g. http) and port 443 (secure web address, e.g. https) for the `revproxy-service`. We can expose these ports using port-forwarding, i.e.,
+```bash
+kubectl port-forward pod/traefik-77f8d8ff7-q662v 80:8000
+kubectl port-forward pod/traefik-77f8d8ff7-q662v 443:8443
 ```
 ### Installing Gen3 Services with Helm
 The Helm charts for the Gen3 services can be found in the [uc-cdis/gen3-helm](https://github.com/uc-cdis/gen3-helm.git) repository. We'd like to add the Gen3 Helm chart repository. To do this, we run:  
