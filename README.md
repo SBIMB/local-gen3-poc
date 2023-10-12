@@ -150,9 +150,8 @@ The list of deployments can be seen by running:
 ```bash
 kubectl get deployments
 ```    
-(Notice that one of the deployments is not running. In particular, the `portal-deployment`.)  
 
-![alt text](/public/assets/images/local-gen3-deployments-with-portal-not-running.png "Gen3 services deployed (except for portal)")  
+![alt text](/public/assets/images/local-gen3-deployments.png "Gen3 services deployed")  
 
 To visit the Gen3 portal, the following command can be run:
 ```bash
@@ -164,4 +163,4 @@ curl https://localhost -k
 ```
 ![alt text](/public/assets/images/portal-service-inaccessible.png "Portal service inaccessible")   
 
-As of this date (12/10/2023), the `portal-deployment` is not up and running. An investigation is underway and this README will be updated accordingly.
+As of this date (12/10/2023), the `portal-service` cannot be reached from the cluster. An investigation is underway and this README will be updated accordingly.
