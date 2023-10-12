@@ -153,14 +153,22 @@ kubectl get deployments
 
 ![alt text](/public/assets/images/local-gen3-deployments.png "Gen3 services deployed")  
 
-To visit the Gen3 portal, the following command can be run:
+We need to make
+The nodePort of the `revproxy-service` is required in order to reach the `portal-service` web page. The following command exposes the `nodePort` of a service:
 ```bash
-curl https://$(minikube ip):443 -k
+minikube service revproxy-service --url
 ```
-or 
+This command creates a tunnel into the cluster. To access the `portal-service` web page url, we need to open another terminal window within the current ssh session. This can be done with:
 ```bash
-curl https://localhost -k
+tmux
 ```
-![alt text](/public/assets/images/portal-service-inaccessible.png "Portal service inaccessible")   
+In the new terminal window, we can use `kubectl` to obtain the nodePort of the `revproxy-service`:
+```bash
+kubectl get service revproxy-service --output='jsonpath="{.spec.ports[0].nodePort}"'
+```
+The output will be the `nodePort`. The Gen3 portal can now be accessed with:
+```bash
+curl http://$(minikube ip):nodePort
+```
+![alt text](/public/assets/images/html-of-gen3-portal.png "HTML of Gen3 Portal")  
 
-As of this date (12/10/2023), the `portal-service` cannot be reached from the cluster. An investigation is underway and this README will be updated accordingly.
