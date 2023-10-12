@@ -146,6 +146,12 @@ The output should look similar to this:
 | ------------- | --------- | --------- | ------------- | ------- | --- |
 | revproxy-dev  | nginx     | localhost | 192.168.49.2  | 80, 443 | 23s |
 
+The list of deployments can be seen by running:
+```bash
+kubectl get deployments
+```    
+(Notice that one of the deployments is not running. In particular, the `portal-deployment`.)  
+
 ![alt text](/public/assets/images/local-gen3-deployments-with-portal-not-running.png "Gen3 services deployed (except for portal)")  
 
 To visit the Gen3 portal, the following command can be run:
