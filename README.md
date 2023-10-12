@@ -153,7 +153,6 @@ kubectl get deployments
 
 ![alt text](/public/assets/images/local-gen3-deployments.png "Gen3 services deployed")  
 
-We need to make
 The nodePort of the `revproxy-service` is required in order to reach the `portal-service` web page. The following command exposes the `nodePort` of a service:
 ```bash
 minikube service revproxy-service --url
