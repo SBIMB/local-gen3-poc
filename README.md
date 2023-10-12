@@ -85,7 +85,7 @@ sudo mv kubectl /usr/local/bin/
 ```
 Minikube can now be started with:
 ```bash
-minikube start --driver=docker
+minikube start --cpus 4 --memory 16g --driver=docker
 ```
 and its status can be seen with:
 ```bash
@@ -146,7 +146,15 @@ The output should look similar to this:
 | ------------- | --------- | --------- | ------------- | ------- | --- |
 | revproxy-dev  | nginx     | localhost | 192.168.49.2  | 80, 443 | 23s |
 
+[Gen3 services deployed (except for portal)](public/assets/images/local-gen3-deployments-with-portal-not-running.png)
+
 To visit the Gen3 portal, the following command can be run:
 ```bash
 curl https://$(minikube ip):443 -k
 ```
+or 
+```bash
+curl https://localhost -k
+```
+[Portal service inaccessible](public/assets/images/portal-service-inaccessible.png)
+As of this date (12/10/2023), the `portal-deployment` is not up and running. An investigation is underway and this README will be updated accordingly.
