@@ -112,7 +112,33 @@ We will need the ingress addon to be enabled:
 ```bash
 minikube addons enable ingress
 ```
-Minikube doesn't have the Traefik ingress controller installed (like Rancher Desktop), instead it uses the NGINX ingress controller. 
+Minikube doesn't have the Traefik ingress controller installed (like Rancher Desktop), instead it uses the NGINX ingress controller.   
+
+To access the Minikube dashboard, simply run:
+```bash
+minikube dashboard
+```
+The dashboard can be visited inside the browser by visiting the dashboard url, which can be obtained from running:
+```bash
+minikube dashboard --url
+```
+**NOTE:** If running the Ubuntu OS on an AWS EC2 instance, the process for visiting the dashboard in the browser is slightly different. Use an open terminal window (which is connected to the EC2 instance) to create a tunnel into the Minikube dashboard:
+```bash
+minikube dashboard --url
+```
+Let's suppose that the dashboard url is located at 
+```bash
+http://127.0.0.1:45255/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/
+```
+Then inside a separate terminal window, ssh into the EC2 instance using the following command (which is a slight modification from the original command used for generating an EC2 instance session):
+```bash
+ssh -i ".ssh/path/to/cert.pem" -L 8081:127.0.0.1:45255 rootuser@ec2-ip-address.compute-1.amazonaws.com
+```
+With these two sessions currently active, a browser window can be opened and the Minikube dashboard can be visited over here:
+```bash
+http://127.0.0.1:8081/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=default
+```
+![alt text](/public/assets/images/minikube-dashboard.png "Minikube Dashboard in Browser")  
 
 ### Installing Gen3 Services with Helm
 The Helm charts for the Gen3 services can be found in the [uc-cdis/gen3-helm](https://github.com/uc-cdis/gen3-helm.git) repository. We'd like to add the Gen3 Helm chart repository. To do this, we run:  
