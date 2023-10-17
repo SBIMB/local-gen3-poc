@@ -14,7 +14,7 @@ metadata:
 spec:
   containers:
   - name: minio
-    image: quay.io/minio/minio:RELEASE.2023-04-07T05-28-58Z
+    image: quay.io/minio/minio:latest
     command:
     - /bin/bash
     - -c
@@ -22,7 +22,7 @@ spec:
     - minio server /data --console-address :9001
     volumeMounts:
     - mountPath: /data
-      name: localvolume
+      name: localvolume # Corresponds to the `spec.volumes` Persistent Volume
     ports:
     - containerPort: 9000
       hostPort: 9000
@@ -31,8 +31,10 @@ spec:
     env:
     - name: BASE_HREF
       value: /minio/
+  # nodeSelector:
+  #   kubernetes.io/hostname: kubealpha.local # Specify a node label associated to the Worker Node on which you want to deploy the pod.
   volumes:
   - name: localvolume
     hostPath:
-      path: /home/ubuntu/data
-      type: DirectoryOrCreate
+      path: /home/ubuntu/data # Specify a path to a local drive or volume on the Kubernetes worker node
+      type: DirectoryOrCreate # The path to the last directory must exist

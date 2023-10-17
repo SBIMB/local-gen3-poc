@@ -132,7 +132,7 @@ http://127.0.0.1:45255/api/v1/namespaces/kubernetes-dashboard/services/http:kube
 ```
 Then inside a separate terminal window, ssh into the EC2 instance using the following command (which is a slight modification from the original command used for generating an EC2 instance session):
 ```bash
-ssh -i ".ssh/path/to/cert.pem" -L 8081:127.0.0.1:45255 rootuser@ec2-ip-address.compute-1.amazonaws.com
+ssh -i "/path/to/cert.pem" -L 8081:127.0.0.1:45255 rootuser@ec2-ip-address.compute-1.amazonaws.com
 ```
 With these two sessions currently active, a browser window can be opened and the Minikube dashboard can be visited over here:
 ```bash
@@ -147,11 +147,13 @@ The Helm charts for the Gen3 services can be found in the [uc-cdis/gen3-helm](ht
 helm repo add gen3 http://helm.gen3.org
 helm repo update
 ```
-Before performing a `helm install`, we need to create a `values.yaml` file. This file should be inside the root and contain the contents of the `values.yaml` file that can be found in the root of this repository. For the `elastic-search-deployment` to run, we need to increase the max virtual memory areas by running:
+The Gen3 Helm chart repository contains the templates for all the microservices making up the Gen3 stack. For the `elastic-search-deployment` to run in a Linux host machine, we need to increase the max virtual memory areas by running:
 ```bash
 sudo sysctl -w vm.max_map_count=262144
 ``` 
-Now the Helm installation can begin by running:
+This setting will only last for the duration of the session. The host machine will be reset to the original value if it gets rebooted. For this change to be set permanently on the host machine, the `/etc/sysctl.conf` file needs to be edited with `vm.max_map_count=262144`. More details can be found on the [official Elasticsearch website](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html).   
+
+Before performing a `helm install`, we need to create a `values.yaml` file. This file should be inside the root and contain the contents of the `values.yaml` file that can be found in the root of this repository. Now the Helm installation can begin by running:
 ```bash
 helm upgrade --install local-gen3-poc gen3/gen3  -f values.yaml
 ```
@@ -197,3 +199,30 @@ curl http://$(minikube ip):nodePort
 ```
 ![alt text](/public/assets/images/html-of-gen3-portal.png "HTML of Gen3 Portal")  
 
+### Setting up MinIO for Object Storage
+[MinIO](https://min.io/docs/minio/kubernetes/upstream/index.html) is an open-source object storage solution which provides all the core Amazon S3 features and is compatible with the Amazon S3 API. It is built to be deployed anywhere - public cloud, private cloud, baremetal infrastructure, etc.   
+
+We will be using MinIO to store uploaded files (like CSV, TSV, or JSON files) in a local volume. This volume will be a directory on the same host machine that the current Minikube cluster is provisioned on. The YAML files for the MinIO pod, service, and ingress are featured in this repository. To create the resources (we will be using the `default` namespace), run:
+```bash
+kubectl apply -f minio-pod.yaml
+kubectl apply -f minio-service.yaml
+```
+The above commands created a `minio-service` of type **ClusterIP** (it is also possible to create the service as a load balancer). To see the list of services, run:
+```bash
+kubectl get services
+```
+and there should be a row in the table that looks like this:
+| NAME           | TYPE      | CLUSTER-IP     | EXTERNAL-IP   | PORT(S)           | AGE  |
+| -------------- | --------- | -------------- | ------------- | ----------------- | ---- |
+| minio-service  | ClusterIP | 10.109.116.135 |    <none>     | 9000/TCP,9001/TCP | 86s  |
+
+**ClusterIP** services are designed to be accessible only from within the same Kubernetes cluster. In order to access the `minio-service` from outside the cluster, we need to make use of our Ingress controller. The Ingress controller will allow us to access MinIO from the browser. Using the `minio-ingress.yaml` file in this repo, we run:
+```bash
+kubectl apply -f minio-ingress.yaml
+```   
+
+The MinIO dashboard can be accessed as follows (or it can be opened up in the browser if you are developing locally, and not on an AWS EC2 instance): 
+```bash
+curl http://$(minikube ip):9001/minio
+```
+![alt text](/public/assets/images/minio-console-in-terminal.png "HTML of MinIO Console") 
