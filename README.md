@@ -34,7 +34,7 @@ and we should get an empty table as our output, i.e.,
 
 ## Using Minikube (on Ubuntu Server 20.04) with Helm
 ### Setting up Minikube Cluster
-Let us go through the steps to install and use Minikube on an Ubuntu machine (virtual or physical). We'll begin by doing a general software dependency update:
+Let us go through the steps to install and use [Minikube](https://minikube.sigs.k8s.io/docs/start/) on an Ubuntu machine (virtual or physical). We'll begin by doing a general software dependency update:
 ```bash
 apt-get update
 ```
@@ -112,7 +112,17 @@ We will need the ingress addon to be enabled:
 ```bash
 minikube addons enable ingress
 ```
-Minikube doesn't have the Traefik ingress controller installed (like Rancher Desktop), instead it uses the NGINX ingress controller.   
+Minikube doesn't have the Traefik ingress controller installed (like Rancher Desktop), instead it uses the NGINX ingress controller. To verify that the ingress is running, use the command:
+```bash
+kubectl get pods -n ingress-nginx
+```    
+The output should look something like this:   
+| NAME                                      | READY | STATUS    | RESTARTS | AGE |
+| ----------------------------------------- | ----- | --------- | -------- | --- |
+| ingress-nginx-admission-create-rmr4p      | 0/1   | Completed | 0        | 15m |
+| ingress-nginx-admission-patch-xf642       | 0/1   | Completed | 1        | 15m |
+| ingress-nginx-controller-7799c6795f-c7ntq | 1/1   | Running   | 1        | 15m |
+
 
 To access the Minikube dashboard, simply run:
 ```bash
@@ -139,6 +149,43 @@ With these two sessions currently active, a browser window can be opened and the
 http://127.0.0.1:8081/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=default
 ```
 ![alt text](/public/assets/images/minikube-dashboard.png "Minikube Dashboard in Browser")  
+
+### Setting up MinIO for Object Storage
+[MinIO](https://min.io/docs/minio/kubernetes/upstream/index.html) is an open-source object storage solution which provides all the core Amazon S3 features and is compatible with the Amazon S3 API. It is built to be deployed anywhere - public cloud, private cloud, baremetal infrastructure, etc.   
+
+We will be using MinIO to store uploaded files (like CSV, TSV, or JSON files) in a local volume. This volume will be a directory on the same host machine that the current Minikube cluster is provisioned on. The YAML files for the MinIO pod, service, and ingress are featured in this repository. To create the resources (we will be using the `default` namespace), run:
+```bash
+kubectl apply -f minio-pod.yaml
+kubectl apply -f minio-service.yaml
+```
+The above commands created a `minio-service` of type **ClusterIP** (it is also possible to create the service as a load balancer). To see the list of services, run:
+```bash
+kubectl get services
+```
+and there should be a row in the table that looks like this:
+| NAME           | TYPE      | CLUSTER-IP     | EXTERNAL-IP   | PORT(S)           | AGE  |
+| -------------- | --------- | -------------- | ------------- | ----------------- | ---- |
+| minio-service  | ClusterIP | 10.109.116.135 |    <none>     | 9000/TCP,9001/TCP | 86s  |
+
+**ClusterIP** services are designed to be accessible only from within the same Kubernetes cluster. In order to access the `minio-service` from outside the cluster, we need to make use of our Ingress controller. The Ingress controller will allow us to access MinIO from the browser. Using the `local-gen3-ingress.yaml` file in this repo, we run:
+```bash
+kubectl apply -f local-gen3-ingress.yaml
+```   
+
+The MinIO dashboard can be accessed as follows (or it can be opened up in the browser if you are developing locally, and not on an AWS EC2 instance): 
+```bash
+curl http://$(minikube ip):9001/minio
+```
+![alt text](/public/assets/images/minio-console-in-terminal.png "HTML of MinIO Console")   
+
+Alternatively, the MinIO service can be exposed as a service of type **LoadBalancer**. This type of service does not require an ingress. This can be achieved by applying the `minio-service-loadbalancer.yaml` resource manifest as follows:
+```bash
+kubectl apply -f minio-service-loadbalancer.yaml
+```
+This will deploy a load balancer MinIO service. A browser window can be opened by running:
+```bash
+minikube service minio-service-lb
+```
 
 ### Installing Gen3 Services with Helm
 The Helm charts for the Gen3 services can be found in the [uc-cdis/gen3-helm](https://github.com/uc-cdis/gen3-helm.git) repository. We'd like to add the Gen3 Helm chart repository. To do this, we run:  
@@ -198,31 +245,3 @@ The output will be the `nodePort`. The Gen3 portal can now be accessed with:
 curl http://$(minikube ip):nodePort
 ```
 ![alt text](/public/assets/images/html-of-gen3-portal.png "HTML of Gen3 Portal")  
-
-### Setting up MinIO for Object Storage
-[MinIO](https://min.io/docs/minio/kubernetes/upstream/index.html) is an open-source object storage solution which provides all the core Amazon S3 features and is compatible with the Amazon S3 API. It is built to be deployed anywhere - public cloud, private cloud, baremetal infrastructure, etc.   
-
-We will be using MinIO to store uploaded files (like CSV, TSV, or JSON files) in a local volume. This volume will be a directory on the same host machine that the current Minikube cluster is provisioned on. The YAML files for the MinIO pod, service, and ingress are featured in this repository. To create the resources (we will be using the `default` namespace), run:
-```bash
-kubectl apply -f minio-pod.yaml
-kubectl apply -f minio-service.yaml
-```
-The above commands created a `minio-service` of type **ClusterIP** (it is also possible to create the service as a load balancer). To see the list of services, run:
-```bash
-kubectl get services
-```
-and there should be a row in the table that looks like this:
-| NAME           | TYPE      | CLUSTER-IP     | EXTERNAL-IP   | PORT(S)           | AGE  |
-| -------------- | --------- | -------------- | ------------- | ----------------- | ---- |
-| minio-service  | ClusterIP | 10.109.116.135 |    <none>     | 9000/TCP,9001/TCP | 86s  |
-
-**ClusterIP** services are designed to be accessible only from within the same Kubernetes cluster. In order to access the `minio-service` from outside the cluster, we need to make use of our Ingress controller. The Ingress controller will allow us to access MinIO from the browser. Using the `minio-ingress.yaml` file in this repo, we run:
-```bash
-kubectl apply -f minio-ingress.yaml
-```   
-
-The MinIO dashboard can be accessed as follows (or it can be opened up in the browser if you are developing locally, and not on an AWS EC2 instance): 
-```bash
-curl http://$(minikube ip):9001/minio
-```
-![alt text](/public/assets/images/minio-console-in-terminal.png "HTML of MinIO Console") 

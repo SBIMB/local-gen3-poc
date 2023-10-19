@@ -1,14 +1,24 @@
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: local-gen3
+  namespace: default
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: local-gen3-nginx
+  ingressClassName: nginx
   rules:
-  - http:
+  - host: gen3.local
+    http:
       paths:
+      - path: /minio(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: minio-service
+            port:
+              number: 9000
       - path: /
         pathType: Prefix
         backend:

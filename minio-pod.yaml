@@ -31,8 +31,6 @@ spec:
     env:
     - name: BASE_HREF
       value: /minio/
-  # nodeSelector:
-  #   kubernetes.io/hostname: kubealpha.local # Specify a node label associated to the Worker Node on which you want to deploy the pod.
   volumes:
   - name: localvolume
     hostPath:
