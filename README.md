@@ -186,6 +186,14 @@ This will deploy a load balancer MinIO service. A browser window can be opened b
 ```bash
 minikube service minio-service-lb
 ```
+If using an EC2 instance or some other vm, a simple way to access the MinIO console is by port-forwarding the service, e.g.,
+```bash
+kubectl port-forward --address 0.0.0.0 svc/minio-service 8088:9001
+```
+This will allow for the browser to access the `minio-service` on port `<public-ip-of-ec2-instance>:8088`:   
+
+![alt text](/public/assets/images/minio-console-in-browser.png "MinIO in the Browser")  
+Default login credentials are `minioadmin` and `minioadmin`.   
 
 ### Installing Gen3 Services with Helm
 The Helm charts for the Gen3 services can be found in the [uc-cdis/gen3-helm](https://github.com/uc-cdis/gen3-helm.git) repository. We'd like to add the Gen3 Helm chart repository. To do this, we run:  
