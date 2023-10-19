@@ -148,7 +148,7 @@ With these two sessions currently active, a browser window can be opened and the
 ```bash
 http://127.0.0.1:8081/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=default
 ```
-![alt text](/public/assets/images/minikube-dashboard.png "Minikube Dashboard in Browser")  
+![Minikube Dashboard in Browser](/public/assets/images/minikube-dashboard.png "Minikube Dashboard in Browser")  
 
 ### Setting up MinIO for Object Storage
 [MinIO](https://min.io/docs/minio/kubernetes/upstream/index.html) is an open-source object storage solution which provides all the core Amazon S3 features and is compatible with the Amazon S3 API. It is built to be deployed anywhere - public cloud, private cloud, baremetal infrastructure, etc.   
@@ -176,7 +176,7 @@ The MinIO dashboard can be accessed as follows (or it can be opened up in the br
 ```bash
 curl http://$(minikube ip):9001/minio
 ```
-![alt text](/public/assets/images/minio-console-in-terminal.png "HTML of MinIO Console")   
+![HTML of MinIO Console](/public/assets/images/minio-console-in-terminal.png "HTML of MinIO Console")   
 
 Alternatively, the MinIO service can be exposed as a service of type **LoadBalancer**. This type of service does not require an ingress. This can be achieved by applying the `minio-service-loadbalancer.yaml` resource manifest as follows:
 ```bash
@@ -192,7 +192,8 @@ kubectl port-forward --address 0.0.0.0 svc/minio-service 8088:9001
 ```
 This will allow for the browser to access the `minio-service` on port `<public-ip-of-ec2-instance>:8088`:   
 
-![alt text](/public/assets/images/minio-console-in-browser.png "MinIO in the Browser")  
+![MinIO in the Browser](/public/assets/images/minio-console-in-browser.png "MinIO in the Browser")  
+
 Default login credentials are `minioadmin` and `minioadmin`.   
 
 ### Installing Gen3 Services with Helm
@@ -234,7 +235,7 @@ The list of deployments can be seen by running:
 kubectl get deployments
 ```    
 
-![alt text](/public/assets/images/local-gen3-deployments.png "Gen3 services deployed")  
+![Gen3 services deployed](/public/assets/images/local-gen3-deployments.png "Gen3 services deployed")  
 
 The nodePort of the `revproxy-service` is required in order to reach the `portal-service` web page. The following command exposes the `nodePort` of a service:
 ```bash
@@ -252,4 +253,4 @@ The output will be the `nodePort`. The Gen3 portal can now be accessed with:
 ```bash
 curl http://$(minikube ip):nodePort
 ```
-![alt text](/public/assets/images/html-of-gen3-portal.png "HTML of Gen3 Portal")  
+![HTML of Gen3 Portal](/public/assets/images/html-of-gen3-portal.png "HTML of Gen3 Portal")  
