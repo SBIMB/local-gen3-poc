@@ -155,8 +155,8 @@ http://127.0.0.1:8081/api/v1/namespaces/kubernetes-dashboard/services/http:kuber
 
 We will be using MinIO to store uploaded files (like CSV, TSV, or JSON files) in a local volume. This volume will be a directory on the same host machine that the current Minikube cluster is provisioned on. The YAML files for the MinIO pod, service, and ingress are featured in this repository. To create the resources (we will be using the `default` namespace), run:
 ```bash
-kubectl apply -f minio-pod.yaml
-kubectl apply -f minio-service.yaml
+kubectl apply -f minio/minio-pod.yaml
+kubectl apply -f minio/minio-service.yaml
 ```
 The above commands created a `minio-service` of type **ClusterIP** (it is also possible to create the service as a load balancer). To see the list of services, run:
 ```bash
@@ -180,7 +180,7 @@ curl http://$(minikube ip):9001/minio
 
 Alternatively, the MinIO service can be exposed as a service of type **LoadBalancer**. This type of service does not require an ingress. This can be achieved by applying the `minio-service-loadbalancer.yaml` resource manifest as follows:
 ```bash
-kubectl apply -f minio-service-loadbalancer.yaml
+kubectl apply -f minio/minio-service-loadbalancer.yaml
 ```
 This will deploy a load balancer MinIO service. A browser window can be opened by running:
 ```bash
@@ -196,6 +196,8 @@ This will allow for the browser to access the `minio-service` on port `<public-i
 
 Default login credentials are `minioadmin` and `minioadmin`.   
 
+(Additional information about using persistent volumes, persistent volume claims, and storage classes will be added in the future).   
+
 ### Installing Gen3 Services with Helm
 The Helm charts for the Gen3 services can be found in the [uc-cdis/gen3-helm](https://github.com/uc-cdis/gen3-helm.git) repository. We'd like to add the Gen3 Helm chart repository. To do this, we run:  
 
@@ -207,7 +209,7 @@ The Gen3 Helm chart repository contains the templates for all the microservices 
 ```bash
 sudo sysctl -w vm.max_map_count=262144
 ``` 
-This setting will only last for the duration of the session. The host machine will be reset to the original value if it gets rebooted. For this change to be set permanently on the host machine, the `/etc/sysctl.conf` file needs to be edited with `vm.max_map_count=262144`. More details can be found on the [official Elasticsearch website](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html).   
+This setting will only last for the duration of the session. The host machine will be reset to the original value if it gets rebooted. For this change to be set permanently on the host machine, the `/etc/sysctl.conf` file needs to be edited with `vm.max_map_count=262144`. To see the current value, run `/sbin/sysctl vm.max_map_count`. More details can be found on the [official Elasticsearch website](https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html).   
 
 Before performing a `helm install`, we need to create a `values.yaml` file. This file should be inside the root and contain the contents of the `values.yaml` file that can be found in the root of this repository. Now the Helm installation can begin by running:
 ```bash

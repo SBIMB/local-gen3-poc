@@ -33,6 +33,8 @@ spec:
       value: /minio/
   volumes:
   - name: localvolume
-    hostPath:
-      path: /home/ubuntu/data # Specify a path to a local drive or volume on the Kubernetes worker node
-      type: DirectoryOrCreate # The path to the last directory must exist
+    persistentVolumeClaim:
+      claimName: minio-pv-claim
+    # hostPath:
+    #   path: /home/ubuntu/data # Specify a path to a local drive or volume on the Kubernetes worker node
+    #   type: DirectoryOrCreate # The path to the last directory must exist
