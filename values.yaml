@@ -1,7 +1,3 @@
-# Default values for gen3.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
 global:
   # -- (map) AWS configuration
   aws:
@@ -52,8 +48,7 @@ global:
   ddEnabled: false
 
 
-# Dependancy Charts
-
+# Dependency Charts
 ambassador:
   # -- (bool) Whether to deploy the ambassador subchart.
   enabled: true
@@ -64,14 +59,11 @@ ambassador:
     tag:
 
 arborist:
-  # -- (bool) Whether to deploy the arborist subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the arborist service.
-    repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
-    tag:
+    repository: quay.io/cdis/arborist
+    pullPolicy: IfNotPresent
+    tag: ""
 
 argo-wrapper:
   # -- (bool) Whether to deploy the argo-wrapper subchart.
@@ -107,16 +99,31 @@ aws-es-proxy:
     awsSecretAccessKey: ""
 
 fence:
-  # -- (bool) Whether to deploy the fence subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the fence service.
-    repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
-    tag:
+    repository: quay.io/cdis/fence
+    pullPolicy: Always
+    tag: "master"
   # -- (map) Configuration settings for Fence app
   FENCE_CONFIG:
+    APP_NAME: 'Local Gen3 Data Commons with Minikube'
+    BASE_URL: 'http://gen3local.co.za/user'
+    # MOCK_AUTH: true
+    # MOCK_GOOGLE_AUTH: true
+    OPENID_CONNECT:
+      google:
+        client_id: ""
+        client_secret: ""
+    AWS_CREDENTIALS:
+      "gen3-user":
+        aws_access_key_id: ""
+        aws_secret_access_key: ""
+    S3_BUCKETS:
+      gen3-bucket:
+        cred: "gen3-user"
+        endpoint_url: "s3.us-east-1.amazonaws.com"
+        region: 'us-east-1'
+    DATA_UPLOAD_BUCKET: "gen3-bucket"
   # -- (string) USER YAML. Passed in as a multiline string.
   USER_YAML:
   # -- (map) Configuration options for usersync cronjob.
@@ -147,23 +154,15 @@ fence:
     slack_send_dbgap: false
 
 guppy:
-  # -- (bool) Whether to deploy the guppy subchart.
   enabled: false
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the guppy service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
 hatchery:
-  # -- (bool) Whether to deploy the hatchery subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the hatchery service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
   hatchery:
@@ -192,7 +191,7 @@ hatchery:
       - "/bin/sh"
       - root
     containers:
-    - # -- (int) port to proxy traffic to in docker contaniner
+    - # -- (int) port to proxy traffic to in docker container
       target-port: 8888
       # -- (string) cpu limit of workspace container
       cpu-limit: '1.0'
@@ -228,68 +227,45 @@ hatchery:
 
 
 indexd:
-  # -- (bool) Whether to deploy the indexd subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the indexd service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
   # -- (string) the default prefix for indexd records
   defaultPrefix: "PREFIX/"
 
 
 manifestservice:
-  # -- (bool) Whether to deploy the manifest service subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the manifest service service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
 metadata:
-  # -- (bool) Whether to deploy the metadata subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the metadata service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
 peregrine:
-  # -- (bool) Whether to deploy the peregrine subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the peregrine service.
-    repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
-    tag:
+    repository: quay.io/cdis/peregrine
+    pullPolicy: IfNotPresent
+    tag: ""
 
 pidgin:
-  # -- (bool) Whether to deploy the pidgin subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the pidgin service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
 portal:
-  # -- (bool) Whether to deploy the portal subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the portal service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
-    # -- (map) GitOps configuration for portal
+
 gitops:
   # -- (string) multiline string - gitops.json
   json:
@@ -305,31 +281,19 @@ gitops:
 
 
 requestor:
-  # -- (bool) Whether to deploy the requestor subchart.
   enabled: false
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the requestor service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
 revproxy:
-  # -- (bool) Whether to deploy the revproxy subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the revproxy service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
-
   ingress:
-    # -- (bool) Whether to create the custom revproxy ingress
     enabled: false
-    # -- (string) The ingress class name.
     className: ""
-    # -- (map) Annotations to add to the ingress.
     annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
@@ -340,41 +304,26 @@ revproxy:
     tls: []
 
 sheepdog:
-  # -- (bool) Whether to deploy the sheepdog subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the sheepdog service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
 ssjdispatcher:
-  # -- (bool) Whether to deploy the ssjdispatcher subchart.
   enabled: false
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the ssjdispatcher service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
 
 wts:
-  # -- (bool) Whether to deploy the wts subchart.
   enabled: true
-  # -- (map) Docker image information.
   image:
-    # -- (string) The Docker image repository for the wts service.
     repository:
-    # -- (string) Overrides the image tag whose default is the chart appVersion.
     tag:
 
-# -- (map) AWS credentials to access the db restore job S3 bucket
 secrets:
-  # -- (string) AWS access key.
   awsAccessKeyId: test
-  # -- (string) AWS secret access key.
   awsSecretAccessKey: test
 
 # Disable persistence by default so we can spin up and down ephemeral environments

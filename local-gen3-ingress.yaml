@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: gen3.local
+  - host: gen3local.co.za # use a registered domain name or use localhost instead
     http:
       paths:
       - path: /minio(/|$)(.*)

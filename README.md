@@ -213,11 +213,11 @@ This setting will only last for the duration of the session. The host machine wi
 
 Before performing a `helm install`, we need to create a `values.yaml` file. This file should be inside the root and contain the contents of the `values.yaml` file that can be found in the root of this repository. Now the Helm installation can begin by running:
 ```bash
-helm upgrade --install local-gen3-poc gen3/gen3  -f values.yaml
+helm upgrade --install local-gen3 gen3/gen3  -f values.yaml
 ```
-In the above command, `local-gen3-poc` is the name of the release of the helm deployment. If the installation is successful, then a message similar to the following should be displayed in the terminal:
+In the above command, `local-gen3` is the name of the release of the helm deployment. If the installation is successful, then a message similar to the following should be displayed in the terminal:
 ```bash
-NAME: local-gen3-poc
+NAME: local-gen3
 LAST DEPLOYED: Wed Oct 11 08:12:04 2023
 NAMESPACE: default
 STATUS: deployed
@@ -255,4 +255,34 @@ The output will be the `nodePort`. The Gen3 portal can now be accessed with:
 ```bash
 curl http://$(minikube ip):nodePort
 ```
-![HTML of Gen3 Portal](/public/assets/images/html-of-gen3-portal.png "HTML of Gen3 Portal")  
+![HTML of Gen3 Portal](/public/assets/images/html-of-gen3-portal.png "HTML of Gen3 Portal")   
+
+We can use port-forwarding to access the Gen3 portal in the browser:
+```bash
+kubectl port-forward --address 0.0.0.0 svc/revproxy-service 8082:80
+```
+![Gen3 Portal Unauthorized](/public/assets/images/gen3-portal-unauthorized.png "Gen3 Portal Unauthorized")   
+
+To see what's inside the `fence-config` secret, run:
+```bash
+kubectl get secret fence-config -o jsonpath='{.data}'
+```
+This value will be encoded. To decode it, the following command needs to be run:
+```bash
+echo 'encoded value from previous step' | base64 --decode
+```
+This decoded value can be scrutinised to see if the correct values specified in the `values.yaml` file has been applied to the `fence-deployment`.   
+
+The `fence-service` requires at least one **OPEN ID CONNECT (OIDC)** client to be setup so that login can work. In our example, we'll use the Google Cloud Console to obtain a [Client ID and Client Secret](https://developers.google.com/identity/protocols/OpenIDConnect). The redirect URIs in Google need to be set to `{{BASE_URL}}/login/google/login`, where `BASE_URL` must correspond to the same value as set in the `values.yaml` file (for local development, it is usually http://localhost).   
+
+More information about the `fence` config can be obtained from the [uc-cdis gen3 repository](https://github.com/uc-cdis/fence/blob/master/tests/test-fence-config.yaml#L72).   
+
+If using an EC2 instance with Google as an auth provider, there might be a few challenges that one may face. For instance, Google requires an authorised redirect uri to be specified. However, ip addresses are not allowed. So the EC2 instance will need to have a domain name allocated to it. Registering a domain name is generally not free, so this might be a problem for testing. In this repository, the domain name `gen3local.co.za` has been registered with [GoDaddy](https://www.godaddy.com/en-za).  
+
+An easier option might be to install [Caddy](https://caddyserver.com/) on the EC2 instance, and then configure the EC2 DNS name in the Gen3 `values.yaml` file as the host name. When everything comes up, then run 
+```bash
+minikube service revproxy-service --url
+``` 
+to get the URL and then put it into `/etc/caddy/CaddyFile`. Caddy will need to be restarted in order for the changes to be reflected. (Disclaimer: I have not tried this yet, but it was recommended by Alan Walsh. He used such a [setup in Jetstream2 for Gen3 Helm deployments](https://github.com/alan-walsh/gen3-dev)).
+
+If running on a local laptop or desktop computer, all this can be avoided by simply using `localhost`.
