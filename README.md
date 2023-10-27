@@ -150,6 +150,18 @@ http://127.0.0.1:8081/api/v1/namespaces/kubernetes-dashboard/services/http:kuber
 ```
 ![Minikube Dashboard in Browser](/public/assets/images/minikube-dashboard.png "Minikube Dashboard in Browser")  
 
+**k9s** is a useful tool that makes troubleshooting issues in a Kubernetes cluster easier. Installing it is highly recommended. It can be downloaded and installed as follows:
+```bash
+wget https://github.com/derailed/k9s/releases/download/v0.25.18/k9s_Linux_x86_64.tar.gz
+tar -xzvf k9s_Linux_x86_64.tar.gz
+chmod +x k9s
+sudo mv k9s /usr/local/bin/
+```
+To open it, simply run:
+```bash
+k9s
+```
+
 ### Setting up MinIO for Object Storage
 [MinIO](https://min.io/docs/minio/kubernetes/upstream/index.html) is an open-source object storage solution which provides all the core Amazon S3 features and is compatible with the Amazon S3 API. It is built to be deployed anywhere - public cloud, private cloud, baremetal infrastructure, etc.   
 
@@ -228,9 +240,9 @@ If all went well, we should see the `revproxy-dev` deployment up and running wit
 kubectl get ingress
 ```
 The output should look similar to this:
-| NAME          | CLASS     | HOSTS     | ADDRESS       | PORTS   | AGE |
-| ------------- | --------- | --------- | ------------- | ------- | --- |
-| revproxy-dev  | nginx     | localhost | 192.168.49.2  | 80, 443 | 23s |
+| NAME          | CLASS     | HOSTS           | ADDRESS       | PORTS   | AGE |
+| ------------- | --------- | --------------- | ------------- | ------- | --- |
+| revproxy-dev  | nginx     | gen3local.co.za | 192.168.49.2  | 80, 443 | 23s |
 
 The list of deployments can be seen by running:
 ```bash
@@ -263,6 +275,7 @@ kubectl port-forward --address 0.0.0.0 svc/revproxy-service 8082:80
 ```
 ![Gen3 Portal Unauthorized](/public/assets/images/gen3-portal-unauthorized.png "Gen3 Portal Unauthorized")   
 
+### Fence Authentication with Google
 To see what's inside the `fence-config` secret, run:
 ```bash
 kubectl get secret fence-config -o jsonpath='{.data}'
@@ -278,6 +291,23 @@ The `fence-service` requires at least one **OPEN ID CONNECT (OIDC)** client to b
 More information about the `fence` config can be obtained from the [uc-cdis gen3 repository](https://github.com/uc-cdis/fence/blob/master/tests/test-fence-config.yaml#L72).   
 
 If using an EC2 instance with Google as an auth provider, there might be a few challenges that one may face. For instance, Google requires an authorised redirect uri to be specified. However, ip addresses are not allowed. So the EC2 instance will need to have a domain name allocated to it. Registering a domain name is generally not free, so this might be a problem for testing. In this repository, the domain name `gen3local.co.za` has been registered with [GoDaddy](https://www.godaddy.com/en-za).  
+
+Minikube has a `gcp-auth` addon that can be enabled. However, the **Google Cloud SDK** needs to be installed first with:
+```bash
+sudo apt install apt-transport-https ca-certificates gnupg
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - 
+echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list 
+sudo apt update  
+sudo apt install google-cloud-sdk 
+```
+Once the **Google Cloud SDK** is installed, the following command should be run to get a link where an authorisation code can be obtained:
+```bash
+ gcloud auth application-default login
+```
+The output will be a web browser link. Copying that link into the browser will lead the user to a Google login screen. After logging in, an authorisation code will be provided. This code is required in order for the `gcp-auth` addon to be enabled. 
+
+Despite using a registered domain name (gen3local.co.za), authentication still fails. More investigation is required regarding `fence` authentication.  
+![Registered Gen3 Portal Unauthorized](/public/assets/images/registered-gen3-portal-unauthorized.png "Registered Gen3 Portal Unauthorized")   
 
 An easier option might be to install [Caddy](https://caddyserver.com/) on the EC2 instance, and then configure the EC2 DNS name in the Gen3 `values.yaml` file as the host name. When everything comes up, then run 
 ```bash
