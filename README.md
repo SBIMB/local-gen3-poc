@@ -1,4 +1,4 @@
-# Gen3 Local Setup
+# Gen3 Local Setup with Minikube
 ## Introduction
 We will be using Helm to deploy a working instance of the Gen3 data commons. This POC is simply created for purposes of "playing around" with Gen3 and getting comfortable with its features. We will be deploying a Gen3 instance on a Kubernetes cluster. This cluster will be running on a laptop, desktop, or some virtual/physical machine in a cluster.
 
@@ -210,6 +210,22 @@ Default login credentials are `minioadmin` and `minioadmin`.
 
 (Additional information about using persistent volumes, persistent volume claims, and storage classes will be added in the future).   
 
+### Running a PostgreSQL Database inside a Docker Container (Optional)
+A postgreSQL database can be created to run inside a Docker container. This should not be in the Kubernetes cluster. This is not necessary for testing, but would be required if a persistent database is required. The following commands can be copied into a script called `init-db.sh` for convenience, or they could be run independently, but sequentially:
+```bash
+echo "Start postgres docker container"
+docker run --rm --name gen3-dev-db -e POSTGRES_PASSWORD=gen3-password -d -p 5432:5432 -v postgres_gen3_dev:/var/lib/postgresql/data postgres:14
+echo "Database starting..."
+sleep 10
+echo "Create gen3 Database"
+docker exec -it gen3-dev-db bash -c 'PGPASSWORD=gen3-password psql -U postgres -c "create database gen3_db"'
+echo "Create gen3_schema Schema"
+docker exec -it gen3-dev-db bash -c 'PGPASSWORD=gen3-password psql -U postgres -d gen3_db -c "create schema gen3_schema"'
+```
+If the script runs successfully, the output should look like:
+![Gen3 PostgreSQL Database](/public/assets/images/gen3-db.png "Gen3 PostgreSQL Database")   
+By default, the hostname of the database is the container id.   
+
 ### Installing Gen3 Services with Helm
 The Helm charts for the Gen3 services can be found in the [uc-cdis/gen3-helm](https://github.com/uc-cdis/gen3-helm.git) repository. We'd like to add the Gen3 Helm chart repository. To do this, we run:  
 
@@ -226,6 +242,7 @@ This setting will only last for the duration of the session. The host machine wi
 Before performing a `helm install`, we need to create a `values.yaml` file. This file should be inside the root and contain the contents of the `values.yaml` file that can be found in the root of this repository. Now the Helm installation can begin by running:
 ```bash
 helm upgrade --install local-gen3 gen3/gen3  -f values.yaml
+helm upgrade --install gen3-dev gen3/gen3 -f values.yaml --create-namespace --namespace=gen3-dev
 ```
 In the above command, `local-gen3` is the name of the release of the helm deployment. If the installation is successful, then a message similar to the following should be displayed in the terminal:
 ```bash

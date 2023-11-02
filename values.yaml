@@ -1,4 +1,5 @@
 global:
+  dev: true
   # -- (map) AWS configuration
   aws:
     enabled: false
@@ -9,7 +10,6 @@ global:
     #   aws_secret_access_key:
 
   # -- (bool) Deploys postgres/elasticsearch for dev
-  dev: true
   postgres:
     # -- (bool) Whether the database create job should run.
     dbCreate: true
@@ -17,9 +17,9 @@ global:
       # -- global postgres master username
       username: postgres
       # -- global postgres master password
-      password:
+      password: gen3-password
       # -- global postgres master host
-      host:
+      host: 68e3214c5087
       # -- global postgres master port
       port: "5432"
   # -- (string) Environment name.
@@ -27,7 +27,7 @@ global:
   # Currently this is being used to share ALB's if you have multiple namespaces in same cluster.
   environment: default
   # -- (string) Hostname for the deployment.
-  hostname: localhost
+  hostname: gen3local.co.za
   # -- (string) ARN of the reverse proxy certificate.
   revproxyArn: arn:aws:acm:us-east-1:123456:certificate
   # -- (string) URL of the data dictionary.
@@ -107,13 +107,11 @@ fence:
   # -- (map) Configuration settings for Fence app
   FENCE_CONFIG:
     APP_NAME: 'Local Gen3 Data Commons with Minikube'
-    BASE_URL: 'http://gen3local.co.za/user'
-    # MOCK_AUTH: true
-    # MOCK_GOOGLE_AUTH: true
     OPENID_CONNECT:
       google:
         client_id: ""
         client_secret: ""
+        # MOCK_AUTH: true
     AWS_CREDENTIALS:
       "gen3-user":
         aws_access_key_id: ""
@@ -121,7 +119,7 @@ fence:
     S3_BUCKETS:
       gen3-bucket:
         cred: "gen3-user"
-        endpoint_url: "s3.us-east-1.amazonaws.com"
+        endpoint_url: ""
         region: 'us-east-1'
     DATA_UPLOAD_BUCKET: "gen3-bucket"
   # -- (string) USER YAML. Passed in as a multiline string.
@@ -225,7 +223,6 @@ hatchery:
       user-volume-location: "/home/jovyan/pd"
       gen3-volume-location: "/home/jovyan/.gen3"
 
-
 indexd:
   enabled: true
   image:
@@ -323,8 +320,8 @@ wts:
     tag:
 
 secrets:
-  awsAccessKeyId: test
-  awsSecretAccessKey: test
+  awsAccessKeyId: ""
+  awsSecretAccessKey: ""
 
 # Disable persistence by default so we can spin up and down ephemeral environments
 postgresql:
